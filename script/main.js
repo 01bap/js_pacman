@@ -23,7 +23,8 @@ document.addEventListener("keydown", (e) => {
 })
 
 
-let game = new Game(30, canvas, ctx)
+export let game = new Game(30, canvas, ctx)
 game.draw_grid();
-
+game.draw_pacman();
+game.draw_ghosts();
 
