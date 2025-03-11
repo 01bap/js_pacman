@@ -4,27 +4,37 @@ import { Game } from "./game.js";
 const canvas = document.getElementById("game-grid")
 const ctx = canvas.getContext("2d");
 
+export let game = new Game(30, canvas, ctx)
+
+function game_loop() {
+    console.log("update")
+    game.step();
+    game.draw_grid();
+    game.draw_ghosts();
+    game.draw_pacman();
+}
+
 
 document.addEventListener("keydown", (e) => {
     switch (e.key) {
         case "w": 
-            console.log("W pressed")
+            game.set_pacman_direction("UP")
+            console.log("w")
             break;
         case "a": 
-            console.log("A pressed")
+            game.set_pacman_direction("LEFT")
+            console.log("a")
             break;
         case "s": 
-            console.log("S pressed")
+            game.set_pacman_direction("DOWN")
+            console.log("d")
             break;
         case "d": 
-            console.log("D pressed")
+            game.set_pacman_direction("RIGHT")
+            console.log("d")
             break;
     }
 })
 
 
-export let game = new Game(30, canvas, ctx)
-game.draw_grid();
-game.draw_pacman();
-game.draw_ghosts();
-
+setInterval(game_loop, 1000);

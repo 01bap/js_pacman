@@ -38,6 +38,23 @@ export class Game {
     }
 
 
+    set_pacman_direction(direction) {
+        this._pacman._direction = direction;
+    }
+
+
+    step() {
+        if (this._pacman._direction == "NONE") {
+            console.log("NONE!")
+            return;
+        }
+        if (this._pacman.can_move()) {
+            this._pacman.move();
+        }
+
+    }
+
+
     draw_grid() {
         this._ctx.strokeStyle = "black";
         
@@ -71,9 +88,12 @@ export class Game {
     draw_pacman() {
         let pac_x = this._pacman._x
         let pac_y = this._pacman._y
+        console.log(pac_x)
+        console.log(pac_y)
         this._ctx.fillStyle = "#cece1e"; 
         this._ctx.fillRect(pac_y * this._cell_size, pac_x * this._cell_size, this._cell_size, this._cell_size);
     }
+
 
     draw_ghosts() {
         for (let i = 0; i < this._ghosts.length; i++) {
