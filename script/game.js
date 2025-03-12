@@ -1,19 +1,37 @@
 
 import { Player } from "./player.js";
 
+//const GAME_LAYOUT = [
+//    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
+//    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'P', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
+//    ['X', 'O', 'G', 'O', 'O', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+//    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
+//];
+
 const GAME_LAYOUT = [
-    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'P', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-    ['X', 'O', 'G', 'O', 'O', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
+    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'X', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'G', 'G', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'G', 'P', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'G', 'G', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']
 ];
+
 
 
 // Copy Paste Code (funktioniert hoffentlich richtig)
@@ -124,7 +142,8 @@ export class Game {
 
 
     get_tile_value(x, y) {
-        if (x > this._game_layout.length || y > this._game_layout[0].length) {
+        //if (x > this._game_layout.length || y > this._game_layout[0].length) {
+        if (x < 0 || y < 0 || x >= this._game_layout.length || y >= this._game_layout[0].length) {
             return "X"
         }
         return this._game_layout[x][y]
