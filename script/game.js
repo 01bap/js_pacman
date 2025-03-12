@@ -5,11 +5,25 @@ const GAME_LAYOUT = [
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
     ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
     ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'P', 'O', 'G', 'X'],
+    ['X', 'O', 'O', 'O', 'P', 'O', 'O', 'X'],
     ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-    ['X', 'G', 'O', 'O', 'O', 'O', 'O', 'X'],
+    ['X', 'O', 'G', 'O', 'O', 'O', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
 ];
+
+
+// Copy Paste Code (funktioniert hoffentlich richtig)
+export function shuffle_array(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
 
 
 export class Game {
@@ -45,13 +59,19 @@ export class Game {
 
     step() {
         if (this._pacman._direction == "NONE") {
-            console.log("NONE!")
             return;
         }
         if (this._pacman.can_move()) {
             this._pacman.move();
         }
 
+        for (let i = 0; i < this._ghosts.length; i++) {
+            this._ghosts[i].move_ghost();
+            
+            if (this._ghosts[i]._x == this._pacman._x && this._ghosts[i]._y == this._pacman._y) {
+                console.log(" -- Handle collision here..")
+            }
+        }
     }
 
 
@@ -66,7 +86,7 @@ export class Game {
                         this._ctx.fillStyle = "#1e1e1e"; 
                         break;
                     default:
-                        this._ctx.fillStyle = "#1e1e8e"; 
+                        this._ctx.fillStyle = "#4e4eae"; 
                         break;
                 }
     
@@ -79,8 +99,34 @@ export class Game {
         }
     }
 
+    draw_grid_lines() {
+        this._ctx.strokeStyle = "black";
+        
+        for (let row = 0; row < this._rows; row++) {
+            for (let col = 0; col < this._cols; col++) {
+                let grid_value = this._game_layout[row][col]; 
+                switch (grid_value) {
+                    case 'X':
+                        this._ctx.fillStyle = "#1e1e1e"; 
+                        break;
+                    default:
+                        this._ctx.fillStyle = "#4e4eae"; 
+                        break;
+                }
+    
+                let x = col * this._cell_size;
+                let y = row * this._cell_size;
+    
+                this._ctx.strokeRect(x, y, this._cell_size, this._cell_size);
+            }
+        }
+    }
+
 
     get_tile_value(x, y) {
+        if (x > this._game_layout.length || y > this._game_layout[0].length) {
+            return "X"
+        }
         return this._game_layout[x][y]
     }
 
@@ -88,8 +134,6 @@ export class Game {
     draw_pacman() {
         let pac_x = this._pacman._x
         let pac_y = this._pacman._y
-        console.log(pac_x)
-        console.log(pac_y)
         this._ctx.fillStyle = "#cece1e"; 
         this._ctx.fillRect(pac_y * this._cell_size, pac_x * this._cell_size, this._cell_size, this._cell_size);
     }

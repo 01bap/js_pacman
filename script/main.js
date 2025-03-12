@@ -7,11 +7,11 @@ const ctx = canvas.getContext("2d");
 export let game = new Game(30, canvas, ctx)
 
 function game_loop() {
-    console.log("update")
     game.step();
     game.draw_grid();
     game.draw_ghosts();
     game.draw_pacman();
+    game.draw_grid_lines();
 }
 
 
@@ -32,6 +32,9 @@ document.addEventListener("keydown", (e) => {
         case "d": 
             game.set_pacman_direction("RIGHT")
             console.log("d")
+            break;
+        case " ":
+            game.set_pacman_direction("NONE")
             break;
     }
 })
