@@ -1,5 +1,5 @@
 
-import { shuffle_array } from "./game.js";
+import { shuffle_array, DIRECTIONS } from "./game.js";
 import { game } from "./main.js";
 
 export class Player {
@@ -16,8 +16,7 @@ export class Player {
     // gibt liste mit möglichen wegen zurück
     possible_direction() {
         let out = []
-        console.log(this._x)
-        console.log(this._y)
+        console.log(this._x, this._y)
         let x = this._x
         let y = this._y
 
@@ -34,6 +33,27 @@ export class Player {
             out.push("RIGHT");
         }
         return out;
+    }
+
+    get_opposite_direction(){
+        switch (this._direction) {
+            case "NONE":
+                return DIRECTIONS.NONE;
+            case "UP":
+                return DIRECTIONS.DOWN;
+            case "DOWN":
+                return DIRECTIONS.UP;
+            case "LEFT":
+                return DIRECTIONS.RIGHT;
+            case "RIGHT":
+                return DIRECTIONS.LEFT;
+        }
+    }
+
+
+    go_back(){
+        this._direction = this.get_opposite_direction();
+        console.log("changed direction: ", this._direction);
     }
 
 
@@ -91,10 +111,16 @@ export class Player {
             this._direction = this.possible_direction()[0];
         }
         let pos_dir = this.possible_direction();
-        console.log(pos_dir)
         if (pos_dir.length > 1) {
             let rand_dir = shuffle_array(pos_dir)
             this._direction = rand_dir[0];
+        } else {
+            if(pos_dir.length == 0){
+                // prevent dead end
+                this.go_back();
+            }else{
+                this._direction = pos_dir[0];
+            }
         }
         console.log(pos_dir)
         switch (this._direction) {
@@ -115,6 +141,10 @@ export class Player {
 
             case "RIGHT": 
                 this._y += 1;
+                break;
+
+            default:
+                console.warn("dead end");
                 break;
         }
     }

@@ -17,22 +17,35 @@ import { Player } from "./player.js";
 
 const GAME_LAYOUT = [
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'G', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'G', 'X'],
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'X', 'X', 'O', 'X', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'G', 'G', 'X', 'O', 'O', 'O', 'X'],
-    ['X', 'O', 'X', 'O', 'X', 'O', 'G', 'P', 'X', 'O', 'X', 'O', 'X'],
-    ['X', 'O', 'X', 'O', 'X', 'O', 'G', 'G', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'P', 'O', 'X', 'O', 'X', 'O', 'X'],
+    ['X', 'O', 'X', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'X', 'O', 'X'],
     ['X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X', 'O', 'X'],
-    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'O', 'X'],
+    ['X', 'G', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'G', 'X'],
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']
 ];
 
-
+export var DIRECTIONS_NUM = {
+    "NONE": 0,
+    "UP": 1,
+    "RIGHT": 2,
+    "DOWN": 3,
+    "LEFT": 4,
+}
+export var DIRECTIONS = {
+    "NONE": "NONE",
+    "UP": "UP",
+    "RIGHT": "RIGHT",
+    "DOWN": "DOWN",
+    "LEFT": "LEFT",
+}
 
 // Copy Paste Code (funktioniert hoffentlich richtig)
 export function shuffle_array(arr) {
@@ -45,10 +58,15 @@ export function shuffle_array(arr) {
 
 
 export class Game {
+    build_coin_overlay(){
+
+        return null;
+    }
     constructor(cell_size, canvas, ctx) {
         this._canvas = canvas;
         this._ctx = ctx;
         this._game_layout = GAME_LAYOUT;
+        this._coin_layout = this.build_coin_overlay();
         this._rows = GAME_LAYOUT.length;
         this._cols = GAME_LAYOUT[0].length;
         this._cell_size = cell_size;
@@ -84,12 +102,31 @@ export class Game {
         }
 
         for (let i = 0; i < this._ghosts.length; i++) {
+            console.log("Move ghost", i);
+            // temporary store old position for collision_detection
+            let old_pos = [this._ghosts[i]._x, this._ghosts[i]._y];
             this._ghosts[i].move_ghost();
-            
-            if (this._ghosts[i]._x == this._pacman._x && this._ghosts[i]._y == this._pacman._y) {
-                console.log(" -- Handle collision here..")
+
+            this.collision_detection(this._pacman, this._ghosts[i], old_pos)
+        }
+    }
+
+    collision_detection(pacman, ghost, old_pos) {
+        // if pacman and ghost are on the same field or if pacman went through pacman
+        if (ghost._x == pacman._x && ghost._y == pacman._y || (pacman._x == old_pos[0] && pacman._y == old_pos[1] && pacman._direction == ghost.get_opposite_direction())) {
+            if (!pacman._eating_mode){
+                this.game_over(false);
             }
         }
+    }
+
+    game_over(win){
+        if(win){
+            alert("You won!");
+        } else {
+            alert("You lost! Try again");
+        }
+        window.location.reload();
     }
 
 
@@ -143,7 +180,7 @@ export class Game {
 
     get_tile_value(x, y) {
         //if (x > this._game_layout.length || y > this._game_layout[0].length) {
-        if (x < 0 || y < 0 || x >= this._game_layout.length || y >= this._game_layout[0].length) {
+        if (x < 1 || y < 1 || x >= this._game_layout.length || y >= this._game_layout[0].length) {
             return "X"
         }
         return this._game_layout[x][y]
