@@ -1,5 +1,5 @@
 
-import { shuffle_array, DIRECTIONS } from "./game.js";
+import { shuffle_array, DIRECTIONS, OVERLAY_ITEM } from "./game.js";
 import { game } from "./main.js";
 
 export class Player {
@@ -7,6 +7,8 @@ export class Player {
         this._x = pos_x;
         this._y = pos_y;
         this._eating_mode = false;
+        this._eating_timer = 0;
+        this._points = 0;
 
         // UP; DOWN; LEFT; RIGHT; NONE;
         this._direction = "NONE";
@@ -16,7 +18,7 @@ export class Player {
     // gibt liste mit möglichen wegen zurück
     possible_direction() {
         let out = []
-        console.log(this._x, this._y)
+        // console.log(this._x, this._y)
         let x = this._x
         let y = this._y
 
@@ -58,6 +60,7 @@ export class Player {
 
 
     can_move() {
+        this.decrement_eating_timer();
         switch (this._direction) {
             case "NONE":
                 break;
@@ -78,7 +81,6 @@ export class Player {
                 if (game.get_tile_value(this._x, this._y+1) == 'X') {return false;}
                 break;
         }
-
         return true;
     }
 
@@ -104,6 +106,30 @@ export class Player {
                 this._y += 1;
                 break;
         }
+
+        switch(game._coin_layout.collectItem(this._x,this._y)){
+            case OVERLAY_ITEM.POWERPELLETS:
+                this.set_eating_mode();
+                break;
+            case OVERLAY_ITEM.COIN:
+                this._points += OVERLAY_ITEM.COIN;
+                break;
+            case OVERLAY_ITEM.SPECIALFRUIT:
+                this._points += OVERLAY_ITEM.SPECIALFRUIT;
+                break;
+        }
+    }
+
+    set_eating_mode(){
+        this._eating_mode = true;
+        this._eating_timer = 16;            // interval cycles
+    }
+    decrement_eating_timer(){
+        if(!this._eating_mode)
+            return;
+        this._eating_timer--;
+        if(this._eating_timer <= 0)
+            this._eating_mode = false;
     }
 
     move_ghost() {
@@ -122,7 +148,6 @@ export class Player {
                 this._direction = pos_dir[0];
             }
         }
-        console.log(pos_dir)
         switch (this._direction) {
             case "NONE":
                 break;

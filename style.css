@@ -1,0 +1,9 @@
+fieldset{
+    margin-bottom: 10px;
+}
+#GameView{
+    justify-items: center;
+}
+#Scoreboard{
+    justify-self: stretch;
+}

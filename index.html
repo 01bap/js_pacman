@@ -4,9 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="./script/main.js" type="module" defer></script>
+    <link href="style.css" rel="stylesheet"/>
     <title>Pacman</title>
 </head>
 <body>
-    <canvas id="game-grid"></canvas>
+    <fieldset id="GameView">
+        <legend>Pacman</legend>
+        <fieldset id="Scoreboard">
+            <legend>Scoreboard</legend>
+            <div>
+                <span>Score: </span>
+                <span id="Score">null</span>
+            </div>
+        </fieldset>
+        <canvas id="game-grid"></canvas>
+    </fieldset>
 </body>
 </html>

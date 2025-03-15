@@ -47,6 +47,75 @@ export var DIRECTIONS = {
     "LEFT": "LEFT",
 }
 
+// Enum for further implementation of special fruits to pick up
+export var OVERLAY_ITEM = {
+    "INVALID": -1,
+    "NONE": 0,
+    "COIN": 1,
+    "POWERPELLETS": 2,          // pellet so that pacman can eat ghosts
+    "SPECIALFRUIT": 3,          // fruit to get more points if implemented
+}
+class GameOverlay {
+    constructor(gameLayout){
+        this.possibleOverlaySpawns = [];
+        this.coins = new Map();         // sync version of spawn points just for coins
+
+        for (let i = 0; i < gameLayout.length; i++) {
+            this.possibleOverlaySpawns[i] = [];
+            for (let j = 0; j < gameLayout[0].length; j++) {
+                switch(gameLayout[i][j]){
+                    case "O":
+                        this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
+                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
+                        break;
+
+                    case "G":
+                        this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
+                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
+                        break;
+
+                    case "P":
+                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.NONE;
+                        break;
+
+                    case "X":
+                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.INVALID;
+                        break;
+                }
+            }
+        }
+    }
+
+    // returns the collected points
+    collectItem(x,y){
+        let key = x + ":" + y;
+
+        // implement special items
+
+        if (!this.coins.has(key))
+            return OVERLAY_ITEM.NONE;
+
+        let points = this.coins.get(key);
+        this.coins.delete(key);
+        this.possibleOverlaySpawns[x][y] = OVERLAY_ITEM.NONE;
+        return points;
+    }
+
+    getItem(x,y){
+        let key = x + ":" + y;
+        if(!this.coins.has(key))
+            return OVERLAY_ITEM.NONE;
+
+        // implement here return of special items
+
+        return this.coins.get(key);
+    }
+
+    areAllCoinsCollected() {
+        return this.coins.size == 0;
+    }
+}
+
 // Copy Paste Code (funktioniert hoffentlich richtig)
 export function shuffle_array(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -58,18 +127,17 @@ export function shuffle_array(arr) {
 
 
 export class Game {
-    build_coin_overlay(){
-
-        return null;
-    }
     constructor(cell_size, canvas, ctx) {
+        this._game_is_running = true;
+        this._item_size = cell_size * 0.4;
         this._canvas = canvas;
         this._ctx = ctx;
         this._game_layout = GAME_LAYOUT;
-        this._coin_layout = this.build_coin_overlay();
         this._rows = GAME_LAYOUT.length;
         this._cols = GAME_LAYOUT[0].length;
         this._cell_size = cell_size;
+        this._coin_layout = new GameOverlay(this._game_layout);
+        console.log(this._coin_layout);
         this._ghosts = []
 
         for (let row = 0; row < this._rows; row++) {
@@ -102,17 +170,23 @@ export class Game {
         }
 
         for (let i = 0; i < this._ghosts.length; i++) {
-            console.log("Move ghost", i);
-            // temporary store old position for collision_detection
+            // console.log("Move ghost", i);
+            // store old position for collision_detection
             let old_pos = [this._ghosts[i]._x, this._ghosts[i]._y];
             this._ghosts[i].move_ghost();
 
-            this.collision_detection(this._pacman, this._ghosts[i], old_pos)
+            this.win_detaction(this._pacman, this._ghosts[i], old_pos);
         }
     }
 
+    win_detaction(pacman, ghost, old_pos){
+        this.collision_detection(pacman, ghost, old_pos);
+        if(this._coin_layout.areAllCoinsCollected())
+            this.game_over(true);
+    }
+
     collision_detection(pacman, ghost, old_pos) {
-        // if pacman and ghost are on the same field or if pacman went through pacman
+        // if pacman and ghost are on the same field or if pacman went through ghost
         if (ghost._x == pacman._x && ghost._y == pacman._y || (pacman._x == old_pos[0] && pacman._y == old_pos[1] && pacman._direction == ghost.get_opposite_direction())) {
             if (!pacman._eating_mode){
                 this.game_over(false);
@@ -121,6 +195,9 @@ export class Game {
     }
 
     game_over(win){
+        if(!this._game_is_running)
+            return;
+        this._game_is_running = false;
         if(win){
             alert("You won!");
         } else {
@@ -128,7 +205,6 @@ export class Game {
         }
         window.location.reload();
     }
-
 
     draw_grid() {
         this._ctx.strokeStyle = "black";
@@ -150,6 +226,47 @@ export class Game {
     
                 this._ctx.fillRect(x, y, this._cell_size, this._cell_size);
                 this._ctx.strokeRect(x, y, this._cell_size, this._cell_size);
+
+                // this.draw_overlay(row,col);
+            }
+        }
+    }
+
+    draw_overlay() {
+        this._ctx.strokeStyle = "black";
+
+        for (let row = 0; row < this._rows; row++) {
+            for (let col = 0; col < this._cols; col++) {
+                let fieldItem = this._coin_layout.getItem(row,col);
+                switch (fieldItem) {
+                    case OVERLAY_ITEM.NONE:
+                    case OVERLAY_ITEM.INVALID:
+                        continue;
+                    case OVERLAY_ITEM.COIN:
+                        this._ctx.fillStyle = "white"; 
+                        break;
+                    case OVERLAY_ITEM.POWERPELLETS:
+                        this._ctx.fillStyle = "pink";
+                        break;
+                    case OVERLAY_ITEM.SPECIALFRUIT:
+                        this._ctx.fillStyle = "black";
+                        break;
+                    default:
+                        console.warn("fieldItem not implemented:",fieldItem);
+                        continue;
+                }
+
+                let x = col * this._cell_size;
+                let y = row * this._cell_size;
+
+                this._ctx.beginPath();
+                this._ctx.arc(
+                    x + this._cell_size * 0.5, y + this._cell_size * 0.5,
+                    this._item_size * 0.5,
+                    0, 2 * Math.PI
+                )
+                this._ctx.fill();
+                this._ctx.stroke();
             }
         }
     }
@@ -199,8 +316,17 @@ export class Game {
         for (let i = 0; i < this._ghosts.length; i++) {
             let ghost_x = this._ghosts[i]._x;
             let ghost_y = this._ghosts[i]._y;
-            this._ctx.fillStyle = "#ce1e1e"; 
+            if(this._pacman._eating_mode){
+                this._ctx.fillStyle = "blue"; 
+            } else {
+                this._ctx.fillStyle = "#ce1e1e"; 
+            }
             this._ctx.fillRect(ghost_y * this._cell_size, ghost_x * this._cell_size, this._cell_size, this._cell_size);
         }
+    }
+
+    update_scoreboard(){
+        let scoreDisplay = document.getElementById("Score");
+        scoreDisplay.innerText = this._pacman._points;
     }
 }
