@@ -4,7 +4,7 @@ import { Game, DIRECTIONS } from "./game.js";
 const canvas = document.getElementById("game-grid");
 const ctx = canvas.getContext("2d");
 
-export let game = new Game(30, canvas, ctx)
+export let game = new Game(30, canvas, ctx);
 
 function game_loop() {
     if(!game._game_is_running)
@@ -16,6 +16,12 @@ function game_loop() {
     game.draw_ghosts();
     game.draw_grid_lines();
     game.update_scoreboard();
+    
+    setTimeout(() => {
+        let new_game = game.game_over();
+        if (new_game != null)
+            game = new_game;
+    }, 1000);
 }
 
 

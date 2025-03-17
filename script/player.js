@@ -8,6 +8,7 @@ export class Player {
         this._y = pos_y;
         this._eating_mode = false;
         this._eating_timer = 0;
+        this._spawn_timer = 0;
         this._points = 0;
 
         // UP; DOWN; LEFT; RIGHT; NONE;
@@ -60,7 +61,7 @@ export class Player {
 
 
     can_move() {
-        this.decrement_eating_timer();
+        // this.decrement_eating_timer();
         switch (this._direction) {
             case "NONE":
                 break;
@@ -110,7 +111,6 @@ export class Player {
         switch(game._coin_layout.collectItem(this._x,this._y)){
             case OVERLAY_ITEM.POWERPELLETS:
                 this.set_eating_mode();
-                break;
             case OVERLAY_ITEM.COIN:
                 this._points += OVERLAY_ITEM.COIN;
                 break;
@@ -122,7 +122,7 @@ export class Player {
 
     set_eating_mode(){
         this._eating_mode = true;
-        this._eating_timer = 16;            // interval cycles
+        this._eating_timer = 9;            // interval cycles
     }
     decrement_eating_timer(){
         if(!this._eating_mode)
@@ -131,8 +131,20 @@ export class Player {
         if(this._eating_timer <= 0)
             this._eating_mode = false;
     }
+    set_spawn_timer() {
+        this._spawn_timer = 6;            // interval cycles
+    }
+    decrement_spawn_timer() {
+        if (this._spawn_timer <= 0)
+            return false;
+        this._spawn_timer--;
+        if (this._spawn_timer <= 0)
+            return true;
+    }
 
     move_ghost() {
+        if(this._spawn_timer > 0)
+            return;
         if (this._direction == "NONE") {
             this._direction = this.possible_direction()[0];
         }

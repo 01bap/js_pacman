@@ -31,6 +31,12 @@ const GAME_LAYOUT = [
     ['X', 'G', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'G', 'X'],
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X']
 ];
+export var GAME_FIELD_TYPES = {
+    "WAY": "O",
+    "WALL": "X",
+    "GHOST": "G",
+    "PACMAN": "P"
+}
 
 export var DIRECTIONS_NUM = {
     "NONE": 0,
@@ -65,8 +71,13 @@ class GameOverlay {
             for (let j = 0; j < gameLayout[0].length; j++) {
                 switch(gameLayout[i][j]){
                     case "O":
-                        this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
-                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
+                        if (Math.floor(Math.random() * 100) % 50 == 0){
+                            this.coins.set(i + ":" + j, OVERLAY_ITEM.POWERPELLETS);
+                            this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.POWERPELLETS;
+                        } else {
+                            this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
+                            this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
+                        }
                         break;
 
                     case "G":
@@ -84,6 +95,7 @@ class GameOverlay {
                 }
             }
         }
+        this.maxCoins = this.coins.size;
     }
 
     // returns the collected points
@@ -102,13 +114,11 @@ class GameOverlay {
     }
 
     getItem(x,y){
-        let key = x + ":" + y;
-        if(!this.coins.has(key))
-            return OVERLAY_ITEM.NONE;
+        return this.possibleOverlaySpawns[x][y];
+    }
 
-        // implement here return of special items
-
-        return this.coins.get(key);
+    getProgress(){
+        return this.coins.size / this.maxCoins;
     }
 
     areAllCoinsCollected() {
@@ -129,6 +139,7 @@ export function shuffle_array(arr) {
 export class Game {
     constructor(cell_size, canvas, ctx) {
         this._game_is_running = true;
+        this._game_succes = false;
         this._item_size = cell_size * 0.4;
         this._canvas = canvas;
         this._ctx = ctx;
@@ -160,11 +171,11 @@ export class Game {
         this._pacman._direction = direction;
     }
 
-
     step() {
         if (this._pacman._direction == "NONE") {
             return;
         }
+        this.interval_checking();
         if (this._pacman.can_move()) {
             this._pacman.move();
         }
@@ -179,32 +190,69 @@ export class Game {
         }
     }
 
+
     win_detaction(pacman, ghost, old_pos){
         this.collision_detection(pacman, ghost, old_pos);
         if(this._coin_layout.areAllCoinsCollected())
-            this.game_over(true);
+            this.end_game(true);
     }
 
     collision_detection(pacman, ghost, old_pos) {
         // if pacman and ghost are on the same field or if pacman went through ghost
         if (ghost._x == pacman._x && ghost._y == pacman._y || (pacman._x == old_pos[0] && pacman._y == old_pos[1] && pacman._direction == ghost.get_opposite_direction())) {
             if (!pacman._eating_mode){
-                this.game_over(false);
+                this.end_game(false);
+            } else {
+                // this._game_layout[ghost._x][ghost._y] = GAME_FIELD_TYPES.WAY;
+                ghost._x = -1;
+                ghost._y = -1;
+                ghost.set_spawn_timer();
             }
         }
     }
 
-    game_over(win){
-        if(!this._game_is_running)
-            return;
+    end_game(successs) {
         this._game_is_running = false;
-        if(win){
+        this._game_succes = successs;
+    }
+    game_over() {
+        if(this._game_is_running)
+            return null;
+        if(this._game_succes){
             alert("You won!");
         } else {
             alert("You lost! Try again");
         }
-        window.location.reload();
+        // reset
+        // window.location.reload();
+        return new Game(30, this._canvas, this._ctx);
     }
+
+
+    get_possible_spawn_points(){
+        let possible_spawn_fields = [];
+        this._game_layout.forEach((field_row, row) => {
+            field_row.forEach((field, col) => {
+                if (field == GAME_FIELD_TYPES.WAY)
+                    possible_spawn_fields.push([row, col]);
+            });
+        });
+        return possible_spawn_fields;
+    }
+
+    spawn_ghost(){
+        let spawn_fields = this.get_possible_spawn_points();
+        // filters possible spawn points that are in the same row or column (prevents ghost from spawning directly in front of pacman)
+        spawn_fields = spawn_fields.filter((spawn_point_pos) => spawn_point_pos[0] != this._pacman._x && spawn_point_pos[1] != this._pacman._y);
+        spawn_fields = shuffle_array(spawn_fields);
+        if(spawn_fields.length > 0){
+            return spawn_fields[0];
+        } else {
+            console.warn("No correct spawn location found!");
+            return [1,1];
+        }
+    }
+
 
     draw_grid() {
         this._ctx.strokeStyle = "black";
@@ -226,8 +274,6 @@ export class Game {
     
                 this._ctx.fillRect(x, y, this._cell_size, this._cell_size);
                 this._ctx.strokeRect(x, y, this._cell_size, this._cell_size);
-
-                // this.draw_overlay(row,col);
             }
         }
     }
@@ -246,10 +292,10 @@ export class Game {
                         this._ctx.fillStyle = "white"; 
                         break;
                     case OVERLAY_ITEM.POWERPELLETS:
-                        this._ctx.fillStyle = "pink";
+                        this._ctx.fillStyle = "yellow";
                         break;
                     case OVERLAY_ITEM.SPECIALFRUIT:
-                        this._ctx.fillStyle = "black";
+                        this._ctx.fillStyle = "pink";
                         break;
                     default:
                         console.warn("fieldItem not implemented:",fieldItem);
@@ -259,14 +305,19 @@ export class Game {
                 let x = col * this._cell_size;
                 let y = row * this._cell_size;
 
-                this._ctx.beginPath();
-                this._ctx.arc(
-                    x + this._cell_size * 0.5, y + this._cell_size * 0.5,
-                    this._item_size * 0.5,
-                    0, 2 * Math.PI
-                )
-                this._ctx.fill();
-                this._ctx.stroke();
+                if(fieldItem == OVERLAY_ITEM.POWERPELLETS){
+                    this._ctx.fillRect(x + this._cell_size * 0.2, y + this._cell_size * 0.2, this._cell_size * 0.6, this._cell_size * 0.6);
+                } else {
+                    this._ctx.beginPath();
+                    this._ctx.arc(
+                        x + this._cell_size * 0.5, y + this._cell_size * 0.5,
+                        this._item_size * 0.5,
+                        0, 2 * Math.PI
+                    )
+                    this._ctx.fill();
+                    this._ctx.stroke();
+                }
+
             }
         }
     }
@@ -294,7 +345,6 @@ export class Game {
         }
     }
 
-
     get_tile_value(x, y) {
         //if (x > this._game_layout.length || y > this._game_layout[0].length) {
         if (x < 1 || y < 1 || x >= this._game_layout.length || y >= this._game_layout[0].length) {
@@ -303,14 +353,12 @@ export class Game {
         return this._game_layout[x][y]
     }
 
-
     draw_pacman() {
         let pac_x = this._pacman._x
         let pac_y = this._pacman._y
         this._ctx.fillStyle = "#cece1e"; 
         this._ctx.fillRect(pac_y * this._cell_size, pac_x * this._cell_size, this._cell_size, this._cell_size);
     }
-
 
     draw_ghosts() {
         for (let i = 0; i < this._ghosts.length; i++) {
@@ -328,5 +376,16 @@ export class Game {
     update_scoreboard(){
         let scoreDisplay = document.getElementById("Score");
         scoreDisplay.innerText = this._pacman._points;
+    }
+
+    interval_checking(){
+        this._pacman.decrement_eating_timer();
+        this._ghosts.forEach((ghost) => {
+            if(ghost.decrement_spawn_timer()) {
+                let pos = this.spawn_ghost();
+                ghost._x = pos[0];
+                ghost._y = pos[1];
+            }
+        });
     }
 }
