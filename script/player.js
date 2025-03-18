@@ -1,5 +1,6 @@
 
-import { shuffle_array, DIRECTIONS, OVERLAY_ITEM } from "./game.js";
+import { shuffle_array, DIRECTIONS } from "./game.js";
+import { OVERLAY_ITEM } from "./game_overlay.js";
 import { game } from "./main.js";
 
 export class Player {

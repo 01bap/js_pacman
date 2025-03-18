@@ -1,19 +1,6 @@
 
 import { Player } from "./player.js";
-
-//const GAME_LAYOUT = [
-//    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-//    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'P', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'O', 'O', 'O', 'X'],
-//    ['X', 'O', 'G', 'O', 'O', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-//    ['X', 'O', 'O', 'O', 'X', 'O', 'O', 'X'],
-//    ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
-//];
+import { GameOverlay, OVERLAY_ITEM } from "./game_overlay.js";
 
 const GAME_LAYOUT = [
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
@@ -53,78 +40,6 @@ export var DIRECTIONS = {
     "LEFT": "LEFT",
 }
 
-// Enum for further implementation of special fruits to pick up
-export var OVERLAY_ITEM = {
-    "INVALID": -1,
-    "NONE": 0,
-    "COIN": 1,
-    "POWERPELLETS": 2,          // pellet so that pacman can eat ghosts
-    "SPECIALFRUIT": 3,          // fruit to get more points if implemented
-}
-class GameOverlay {
-    constructor(gameLayout){
-        this.possibleOverlaySpawns = [];
-        this.coins = new Map();         // sync version of spawn points just for coins
-
-        for (let i = 0; i < gameLayout.length; i++) {
-            this.possibleOverlaySpawns[i] = [];
-            for (let j = 0; j < gameLayout[0].length; j++) {
-                switch(gameLayout[i][j]){
-                    case "O":
-                        if (Math.floor(Math.random() * 100) % 50 == 0){
-                            this.coins.set(i + ":" + j, OVERLAY_ITEM.POWERPELLETS);
-                            this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.POWERPELLETS;
-                        } else {
-                            this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
-                            this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
-                        }
-                        break;
-
-                    case "G":
-                        this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
-                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
-                        break;
-
-                    case "P":
-                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.NONE;
-                        break;
-
-                    case "X":
-                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.INVALID;
-                        break;
-                }
-            }
-        }
-        this.maxCoins = this.coins.size;
-    }
-
-    // returns the collected points
-    collectItem(x,y){
-        let key = x + ":" + y;
-
-        // implement special items
-
-        if (!this.coins.has(key))
-            return OVERLAY_ITEM.NONE;
-
-        let points = this.coins.get(key);
-        this.coins.delete(key);
-        this.possibleOverlaySpawns[x][y] = OVERLAY_ITEM.NONE;
-        return points;
-    }
-
-    getItem(x,y){
-        return this.possibleOverlaySpawns[x][y];
-    }
-
-    getProgress(){
-        return this.coins.size / this.maxCoins;
-    }
-
-    areAllCoinsCollected() {
-        return this.coins.size == 0;
-    }
-}
 
 // Copy Paste Code (funktioniert hoffentlich richtig)
 export function shuffle_array(arr) {
@@ -134,21 +49,34 @@ export function shuffle_array(arr) {
     }
     return arr;
 }
+export function create_random_maze(rows,cols){
+    if(rows == null || cols == null || rows <= 5 || cols <= 5)
+        return GAME_LAYOUT;
 
+    const horizontalBorder = new Array(cols).fill(GAME_FIELD_TYPES.WALL,0,cols);
+    let gamefield = [];
+    gamefield.push(horizontalBorder);
+    let gamefieldRow = [];
+    // console.log(gamefield,horizontalBorder);
+    for(let row = 1; row < rows - 1; row++){
+
+    }
+
+    return GAME_LAYOUT;
+}
 
 export class Game {
-    constructor(cell_size, canvas, ctx) {
+    constructor(cell_size,canvas,ctx,rows,cols) {
         this._game_is_running = true;
         this._game_succes = false;
         this._item_size = cell_size * 0.4;
         this._canvas = canvas;
         this._ctx = ctx;
-        this._game_layout = GAME_LAYOUT;
-        this._rows = GAME_LAYOUT.length;
-        this._cols = GAME_LAYOUT[0].length;
+        this._game_layout = create_random_maze(rows, cols);
+        this._rows = this._game_layout.length;      //rows;
+        this._cols = this._game_layout[0].length;       //cols;
         this._cell_size = cell_size;
         this._coin_layout = new GameOverlay(this._game_layout);
-        console.log(this._coin_layout);
         this._ghosts = []
 
         for (let row = 0; row < this._rows; row++) {
@@ -165,7 +93,6 @@ export class Game {
         canvas.width = this._cols * this._cell_size;
         canvas.height = this._rows * this._cell_size;
     }
-
 
     set_pacman_direction(direction) {
         this._pacman._direction = direction;
