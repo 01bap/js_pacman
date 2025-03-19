@@ -1,13 +1,12 @@
 
-import { Game, DIRECTIONS, create_random_maze } from "./game.js";
+import { Game, DIRECTIONS, create_random_gamefield } from "./game.js";
 
 const canvas = document.getElementById("game-grid");
 const ctx = canvas.getContext("2d");
 
 export let game = new Game(30, canvas, ctx);
-create_random_maze(20,20);
-create_random_maze(6,7);
-create_random_maze(6,5);
+create_random_gamefield(21,20);
+// create_random_gamefield(9,9);
 
 function game_loop() {
     if(!game._game_is_running)
