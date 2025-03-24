@@ -1,18 +1,18 @@
 import { GAME_FIELD_TYPES } from "./game.js";
 
-// Enum for further implementation of special fruits to pick up
+// Aufzählung aller möglichen Items, die auf dem Spielfeld spawnen können (kann weiter ausgeführt werden)
 export var OVERLAY_ITEM = {
     "INVALID": -1,
     "NONE": 0,
     "COIN": 1,
-    "POWERPELLETS": 2,          // pellet so that pacman can eat ghosts
-    "SPECIALFRUIT": 3,          // fruit to get more points if implemented
+    "POWERPELLETS": 2,          // Pallette, um Pacman in den eating Modus zu versetzen
+    "SPECIALFRUIT": 3,          // Spezielle Frucht für extra Punkte (nicht implementiert)
 }
 
 export class GameOverlay {
     constructor(gameLayout){
         this.possibleOverlaySpawns = [];
-        this.coins = new Map();         // sync version of spawn points just for coins
+        this.coins = new Map();         // Synchron mit possibleOverlaySpawns, aber nur für die Coins
 
         for (let i = 0; i < gameLayout.length; i++) {
             this.possibleOverlaySpawns[i] = [];
@@ -44,10 +44,14 @@ export class GameOverlay {
             }
         }
         this.maxCoins = this.coins.size;
-        // console.log(this.possibleOverlaySpawns);
     }
 
-    // returns the collected points
+    /**
+     * Gibt den Wert des eingesammelten Items zurück
+     * @param {number} x 
+     * @param {number} y 
+     * @returns {number}
+     */
     collectItem(x,y){
         let key = x + ":" + y;
 
@@ -66,10 +70,19 @@ export class GameOverlay {
         return this.possibleOverlaySpawns[x][y];
     }
 
+    /**
+     * Gibt den aktuellen Fortschritt des Levels an
+     * @(kann benutzt werden, um zB die Schwierigkeit zu erhöhen oder Special Fruits zu spawnen)
+     * @returns 
+     */
     getProgress(){
         return this.coins.size / this.maxCoins;
     }
 
+    /**
+     * Schaut, ob alle Coins eingesammelt sind
+     * @returns 
+     */
     areAllCoinsCollected() {
         return this.coins.size == 0;
     }

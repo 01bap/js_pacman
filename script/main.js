@@ -92,6 +92,7 @@ const game_col_display = document.getElementById("game_cols_display");
 const game_square_only_checkbox = document.getElementById("game_size_squared");
 
 // setting eventlistener
+// erkennen eine Änderung an den html Elementen und führen die entsprechende Funktion aus
 game_velocity_slider.addEventListener("change", () => update_game_velocity());
 game_row_slider.addEventListener("change", () => update_game_rows());
 game_col_slider.addEventListener("change", () => update_game_cols());

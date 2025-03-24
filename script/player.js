@@ -20,7 +20,6 @@ export class Player {
     // gibt liste mit möglichen wegen zurück
     possible_direction() {
         let out = []
-        // console.log(this._x, this._y)
         let x = this._x
         let y = this._y
 
@@ -123,7 +122,7 @@ export class Player {
 
     set_eating_mode(){
         this._eating_mode = true;
-        this._eating_timer = 9;            // interval cycles
+        this._eating_timer = Math.floor(game._rows * game._cols / 2);           // interval cycles
     }
     decrement_eating_timer(){
         if(!this._eating_mode)
@@ -155,7 +154,7 @@ export class Player {
             this._direction = rand_dir[0];
         } else {
             if(pos_dir.length == 0){
-                // prevent dead end
+                // Umgeht Sackgassen
                 this.go_back();
             }else{
                 this._direction = pos_dir[0];

@@ -57,7 +57,12 @@ export function create_random_gamefield(rows, cols) {
     return gamefield;           // <= Diese Zeile auskommentieren, damit nur 'GAME_LAYOUT' benutzt wird 
     return GAME_LAYOUT;
 }
-
+/**
+ * Spawnt die Geister außerhalb der Spawnbox von Pacman
+ * @param {string[][]} gamefield 
+ * @param {number[2]} CENTER_POINT 
+ * @returns 
+ */
 function spawn_ghosts(gamefield,CENTER_POINT) {
     let possible_spawn_points = [];
     gamefield.forEach((row,row_index) => {
@@ -433,7 +438,7 @@ function get_random_field() {
  * (0: Empty/WildCard, 1: Way, 2: Wall, 3: Invalid, -: Verneinung)
  * @param {number} row 
  * @param {number} col 
- * @param {number[][]} gamefield 
+ * @param {string[][]} gamefield 
  * @returns 
  */
 function get_surroundings_matrix(row,col,gamefield) {
@@ -481,8 +486,8 @@ function get_surroundings_matrix(row,col,gamefield) {
  * @[X X X X X X X X X] ]
  * @param {number} rows
  * @param {number} cols 
- * @param {number[]} CENTER_POINT 
- * @returns 
+ * @param {number[2]} CENTER_POINT 
+ * @returns {string[][]}
  */
 function make_bare_bone_gamefield(rows,cols,CENTER_POINT){
     const horizontalBorder = new Array(cols).fill(GAME_FIELD_TYPES.WALL, 0, cols);
@@ -516,6 +521,11 @@ function make_bare_bone_gamefield(rows,cols,CENTER_POINT){
     gamefield.push(horizontalBorder);
     return gamefield;
 }
+/**
+ * Erstellt die erste Reihe des Spielfeldes mit einem gewissen Zufall, um mehr Varianz reinzubringen
+ * @param {number} cols 
+ * @returns 
+ */
 function random_first_row(cols) {
     let random_row = new Array(3).fill(GAME_FIELD_TYPES.WAY, 0, 3);
     for (let col = 3; col < cols - 3; col++) {
@@ -579,8 +589,7 @@ export class Game {
         }
 
         for (let i = 0; i < this._ghosts.length; i++) {
-            // console.log("Move ghost", i);
-            // store old position for collision_detection
+            // zwischenspeichern der alten position für die Kollisionserkennung (collision_detection)
             let old_pos = [this._ghosts[i]._x, this._ghosts[i]._y];
             this._ghosts[i].move_ghost();
 
@@ -596,7 +605,7 @@ export class Game {
     }
 
     collision_detection(pacman, ghost, old_pos) {
-        // if pacman and ghost are on the same field or if pacman went through ghost
+        // Abfrage, ob Pacman und Geist auf dem selben Feld sind oder Pacman durch den Geist durchgegangen ist
         if (ghost._x == pacman._x && ghost._y == pacman._y || (pacman._x == old_pos[0] && pacman._y == old_pos[1] && pacman._direction == ghost.get_opposite_direction())) {
             if (!pacman._eating_mode) {
                 this.end_game(false);
@@ -640,7 +649,7 @@ export class Game {
 
     spawn_ghost() {
         let spawn_fields = this.get_possible_spawn_points();
-        // filters possible spawn points that are in the same row or column (prevents ghost from spawning directly in front of pacman)
+        // Filtert Spawnpunkte vom Geist, sodass dieser nicht direkt vor Pacman spawnen kann
         spawn_fields = spawn_fields.filter((spawn_point_pos) => spawn_point_pos[0] != this._pacman._x && spawn_point_pos[1] != this._pacman._y);
         spawn_fields = shuffle_array(spawn_fields);
         if (spawn_fields.length > 0) {
