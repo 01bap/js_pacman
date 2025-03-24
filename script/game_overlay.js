@@ -1,3 +1,5 @@
+import { GAME_FIELD_TYPES } from "./game.js";
+
 // Enum for further implementation of special fruits to pick up
 export var OVERLAY_ITEM = {
     "INVALID": -1,
@@ -16,7 +18,7 @@ export class GameOverlay {
             this.possibleOverlaySpawns[i] = [];
             for (let j = 0; j < gameLayout[0].length; j++) {
                 switch(gameLayout[i][j]){
-                    case "O":
+                    case GAME_FIELD_TYPES.WAY:
                         if (Math.floor(Math.random() * 100) % 50 == 0){
                             this.coins.set(i + ":" + j, OVERLAY_ITEM.POWERPELLETS);
                             this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.POWERPELLETS;
@@ -26,17 +28,17 @@ export class GameOverlay {
                         }
                         break;
 
-                    case "G":
+                    case GAME_FIELD_TYPES.GHOST:
                         this.coins.set(i + ":" + j, OVERLAY_ITEM.COIN);
                         this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.COIN;
                         break;
 
-                    case "P":
-                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.NONE;
-                        break;
-
-                    case "X":
+                    case GAME_FIELD_TYPES.WALL:
                         this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.INVALID;
+                        break;
+                        
+                    default:
+                        this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.NONE;
                         break;
                 }
             }

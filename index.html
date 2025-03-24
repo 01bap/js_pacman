@@ -17,7 +17,37 @@
                 <span id="Score">null</span>
             </div>
         </fieldset>
-        <canvas id="game-grid"></canvas>
+        <div>
+            <canvas id="game-grid"></canvas>
+            <fieldset id="Settings">
+                <legend>Settings</legend>
+                <p>--- Toggle settings with 'T' ---</p>
+                <div class="single-setting">
+                    <p>Game velocity:</p>
+                    <input type="range" min="0.1" max="2" value="1" step="0.1" class="slider" id="game_velocity">
+                    <p id="game_velocity_display">x1</p>
+                </div>
+                <div class="multi-setting">
+                    <h3>Game size</h3>
+                    <div class="multi-setting">
+                        <div class="single-setting">
+                            <p>Rows:</p>
+                            <input type="range" min="9" max="29" value="14" step="1" class="slider" id="game_rows">
+                            <p id="game_rows_display">14</p>
+                        </div>
+                        <div class="single-setting">
+                            <p>Cols:</p>
+                            <input type="range" min="9" max="29" value="13" step="1" class="slider" id="game_cols">
+                            <p id="game_cols_display">13</p>
+                        </div>
+                        <div class="single-setting">
+                            <p>Square only</p>
+                            <input type="checkbox" class="checkbox" id="game_size_squared"/>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
     </fieldset>
 </body>
 </html>
