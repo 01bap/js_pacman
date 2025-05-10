@@ -1,6 +1,7 @@
 
 import { Game, DIRECTIONS } from "./game.js";
 
+// Defaultwerte mit denen das Spiel startet
 const canvas = document.getElementById("game-grid");
 const ctx = canvas.getContext("2d");
 let enable_arrow_movment = false;
@@ -12,6 +13,7 @@ var game_interval = null;
 
 export let game = new Game(game_cell_size, canvas, ctx,game_rows,game_cols);
 
+// Diese Funktion wird mit der angegebenen Geschwindigkeit geloopt
 function game_loop() {
     game.step();
     game.draw_grid();
@@ -27,6 +29,7 @@ function game_loop() {
     }
     hide_settings();
     setTimeout(() => {
+        // Wenn ein Endzustand erkannt wird, wird ein neues Spielfeld geladen
         let new_game = game.game_over();
         if (new_game != null) {
             game = new_game;
@@ -35,7 +38,7 @@ function game_loop() {
     }, game_velocity);
 }
 
-
+// Alle keybinds
 document.addEventListener("keydown", (e) => {
     switch (e.key) {
         case "ArrowUp": 
@@ -99,6 +102,10 @@ game_col_slider.addEventListener("change", () => update_game_cols());
 game_square_only_checkbox.addEventListener("change", () => update_game_size());
 
 // game_velocity
+/**
+ * Updated die Spielgeschwindigkeit
+ * @returns
+ */
 function update_game_velocity() {
     if(game._game_is_running) {
         game_velocity_display.innerHTML = "x" + game_velocity_slider.value;
@@ -110,7 +117,7 @@ function update_game_velocity() {
     if(game_interval != null) {
         clearInterval(game_interval);
     }
-    game_interval = setInterval(game_loop, game_velocity);
+    game_interval = setInterval(game_loop, game_velocity);          // <-- Game loop
 }
 // game_rows
 function update_game_rows() {

@@ -122,7 +122,8 @@ export class Player {
 
     set_eating_mode(){
         this._eating_mode = true;
-        this._eating_timer = Math.floor(game._rows * game._cols / 2);           // interval cycles
+        // Pacman kann durch das halbe Spielfeld im Essensmodus durchlaufen
+        this._eating_timer = Math.floor(game._rows * game._cols / 2);           // Setzt den Timer, wie viele Zyklen der Modus anhält
     }
     decrement_eating_timer(){
         if(!this._eating_mode)
@@ -132,7 +133,7 @@ export class Player {
             this._eating_mode = false;
     }
     set_spawn_timer() {
-        this._spawn_timer = 6;            // interval cycles
+        this._spawn_timer = 6;            // Interval Zyklen
     }
     decrement_spawn_timer() {
         if (this._spawn_timer <= 0)

@@ -9,16 +9,22 @@ export var OVERLAY_ITEM = {
     "SPECIALFRUIT": 3,          // Spezielle Frucht für extra Punkte (nicht implementiert)
 }
 
+/**
+ * Ist für die Items auf dem Spielfeld zuständig
+ */
 export class GameOverlay {
     constructor(gameLayout){
         this.possibleOverlaySpawns = [];
         this.coins = new Map();         // Synchron mit possibleOverlaySpawns, aber nur für die Coins
 
+        // Iteriert über das ganze Spielfeld
         for (let i = 0; i < gameLayout.length; i++) {
             this.possibleOverlaySpawns[i] = [];
             for (let j = 0; j < gameLayout[0].length; j++) {
+                // Erstellt ein Overlay entsprechend der Felder des Spielfeldes
                 switch(gameLayout[i][j]){
                     case GAME_FIELD_TYPES.WAY:
+                        // Wahrscheinlichkeit dass eine Powerpellet spawnt liegt bei 1/50
                         if (Math.floor(Math.random() * 100) % 50 == 0){
                             this.coins.set(i + ":" + j, OVERLAY_ITEM.POWERPELLETS);
                             this.possibleOverlaySpawns[i][j] = OVERLAY_ITEM.POWERPELLETS;

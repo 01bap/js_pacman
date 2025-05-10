@@ -3,6 +3,7 @@ import { Player } from "./player.js";
 import { GameOverlay, OVERLAY_ITEM } from "./game_overlay.js";
 import { game_cell_size, game_rows, game_cols } from "./main.js";
 
+// Default Spielfeld
 const GAME_LAYOUT = [
     ['X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'],
     ['X', 'G', 'O', 'O', 'X', 'O', 'O', 'O', 'X', 'O', 'O', 'G', 'X'],
@@ -44,8 +45,14 @@ export function shuffle_array(arr) {
     }
     return arr;
 }
+/**
+ * Erstellt ein zufälliges Spielfeld von oben nach unten (Zeile um Zeile)
+ * @param {number} rows 
+ * @param {number} cols 
+ * @returns 
+ */
 export function create_random_gamefield(rows, cols) {
-    // 2 Zeile und Spalten für den Rand und mindestens 7 Felder für das eigentliche Spielfeld
+    // 2 Zeilen und Spalten für den Rand und mindestens 7 Felder für das eigentliche Spielfeld
     if (rows == null || cols == null || rows < 9 || cols < 9)
         return GAME_LAYOUT;
 
@@ -67,6 +74,7 @@ function spawn_ghosts(gamefield,CENTER_POINT) {
     let possible_spawn_points = [];
     gamefield.forEach((row,row_index) => {
         row.forEach((field,col_index) => {
+            // Nutzt das generierte Spielfeld, um alle Wege rauszufiltern und die Spawnbox zu ignorieren
             if(field == GAME_FIELD_TYPES.WAY && (row_index > CENTER_POINT[0] + 2 || row_index < CENTER_POINT[0] - 2 || col_index > CENTER_POINT[1] + 2 || col_index < CENTER_POINT[1] - 2)) {
                 possible_spawn_points.push([row_index, col_index]);
             }
@@ -74,6 +82,7 @@ function spawn_ghosts(gamefield,CENTER_POINT) {
     )});
     let pos = new Array(2);
     for(let i = 0; i < 4; i++) {
+        // Zufälliges Feld aus allen gefilterten Feldern wählen
         possible_spawn_points = shuffle_array(possible_spawn_points);
         pos = possible_spawn_points.shift();
         gamefield[pos[0]][pos[1]] = GAME_FIELD_TYPES.GHOST;
@@ -83,12 +92,21 @@ function spawn_ghosts(gamefield,CENTER_POINT) {
 function fill_empty_gamefields(gamefield) {
     let matrix = new Array(24).fill(0);
     let field = GAME_FIELD_TYPES.NONE;
+    // Iteriert über jedes Feld
     for (let row = 2; row < gamefield.length - 1; row++) {
         for(let col = 1; col < gamefield[0].length - 1; col++) {
             field = gamefield[row][col];
+            // Generiert ein Feld, wenn noch keins vorhanden ist
             if(field != GAME_FIELD_TYPES.NONE)
                 continue;
+            // Holt sich die umliegenden Felder (5x5 Matrix) von der aktuellen Position
+            // Variable matrix besteht dann aus einem Array von 24 Feldern (5x5 - 1)
+            // Für eine bessere Spielfeldgenerierung muss die Matrix erweitert werden, um mehr Eventualitäten abzuwägen
             matrix = get_surroundings_matrix(row,col,gamefield);
+
+            // Sucht nach Pattern, um das Feld zu bestimmen
+            // Pattern werden in der compare_surroundings_matrix_with_pattern() verglichen
+            // Priorität: WAY > WALL > RANDOM
             
             /**
              * ? ? ? ? ? | ? ? ? ? ? | ? ? ? ? ? | ? ? ? ? ? | ? ? X ? ? | ? ? ? ? ? | ? ? ? ? ? | ? ? ? ? ? | ? ? ? ? ? | ? ? X ? ? | ? ? X ? ?
@@ -331,57 +349,40 @@ function fill_empty_gamefields(gamefield) {
             /**/
             if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_1)) {
                 gamefield[row][col] = get_random_field();
-                // console.log("RANDOM1",row,col,matrix);
                 continue;
             }
             if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_2)) {
                 gamefield[row][col] = get_random_field();
-                // console.log("RANDOM2",row,col,matrix);
                 continue;
             }
-            // if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_3)) {
-            //     gamefield[row][col] = get_random_field();
-            //     console.log("RANDOM3",row,col,matrix);
-            //     continue;
-            // }
-            // if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_4)) {
-            //     gamefield[row][col] = get_random_field();
-            //     console.log("RANDOM4",row,col,matrix);
-            //     continue;
-            // }
-            // if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_5)) {
-            //     gamefield[row][col] = get_random_field();
-            //     console.log("RANDOM5",row,col,matrix);
-            //     continue;
-            // }
             if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_6)) {
                 gamefield[row][col] = get_random_field();
-                // console.log("RANDOM6",row,col,matrix);
                 continue;
             }
             if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_7)) {
                 gamefield[row][col] = get_random_field();
-                // console.log("RANDOM7",row,col,matrix);
                 continue;
             }
             if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_8)) {
                 gamefield[row][col] = get_random_field();
-                // console.log("RANDOM8",row,col,matrix);
                 continue;
             }
             if(compare_surroundings_matrix_with_pattern(matrix, RANDOM_PATTERN_9)) {
                 gamefield[row][col] = get_random_field();
-                // console.log("RANDOM9",row,col,matrix);
                 continue;
             }
-            /**/
-
-            // gamefield[row][col] = GAME_FIELD_TYPES.NONE;
+            // Falls kein Pattern gefunden wurde, wird ein zufälliges Feld generiert
             gamefield[row][col] = get_random_field();
         }
     }
     return gamefield;
 }
+/**
+ * Nutzt die Feldtypen für die beiden Matrizen, um diese zu vergleichen.
+ * @param {number[24]} orign_matrix 
+ * @param {number[24]} pattern_matrix 
+ * @returns 
+ */
 function compare_surroundings_matrix_with_pattern(orign_matrix, pattern_matrix) {
     if(orign_matrix.length != 24 || pattern_matrix.length != 24) {
         console.warn("Matrix doesnt match surroundings!");
@@ -422,10 +423,8 @@ function compare_surroundings_matrix_with_pattern(orign_matrix, pattern_matrix) 
 function get_random_field() {
     // Wahrscheinlichkeit für eine 'Wall': 1/WALL_PROPABILITY
     const WALL_PROPABILITY = 2;
-    // random
     return (Math.floor((Math.random() * 10) * WALL_PROPABILITY) % WALL_PROPABILITY == 0) ?
         GAME_FIELD_TYPES.WALL : GAME_FIELD_TYPES.WAY;
-        // GAME_FIELD_TYPES.HIGHLIGHTED_WALL : GAME_FIELD_TYPES.GHOST;
 }
 /** 
  * @Umgebungsarray:
@@ -490,14 +489,17 @@ function get_surroundings_matrix(row,col,gamefield) {
  * @returns {string[][]}
  */
 function make_bare_bone_gamefield(rows,cols,CENTER_POINT){
+    // reihe voll mit wänden (für oben und unten)
     const horizontalBorder = new Array(cols).fill(GAME_FIELD_TYPES.WALL, 0, cols);
+    // reihe mit wand rändern
     const horizontalBareBoneRow = [GAME_FIELD_TYPES.WALL].concat(new Array(cols - 2).fill(GAME_FIELD_TYPES.NONE, 0, cols - 2), GAME_FIELD_TYPES.WALL);
     let gamefield = [];
     gamefield.push(horizontalBorder);
+    // erste reihe wird zufällig generiert damit spätere daraus folgende reihen ein wenig varianz bekommen
     gamefield.push([GAME_FIELD_TYPES.WALL].concat(random_first_row(cols - 2), [GAME_FIELD_TYPES.WALL]));
     for(let row = 2; row < rows - 1; row++) {
         gamefield.push([...horizontalBareBoneRow]);
-        // wall corners of the 3 x 3
+        // ecken um die 3 x 3 spawnfläche für pacman
         if(row == CENTER_POINT[0] - 2) {
             gamefield[row][CENTER_POINT[1] - 2] = GAME_FIELD_TYPES.WALL;
             gamefield[row][CENTER_POINT[1] - 1] = GAME_FIELD_TYPES.WALL;
@@ -527,8 +529,10 @@ function make_bare_bone_gamefield(rows,cols,CENTER_POINT){
  * @returns 
  */
 function random_first_row(cols) {
+    // Die ersten drei felder müssen wege sein
     let random_row = new Array(3).fill(GAME_FIELD_TYPES.WAY, 0, 3);
     for (let col = 3; col < cols - 3; col++) {
+        // Eine wand darf erst dann kommen wenn mindestends 3 wege dazwischen liegen
         if(!random_row.slice(-3).includes(GAME_FIELD_TYPES.WALL)){
             if(Math.floor(Math.random() * 100) % 2 == 0){
                 random_row.push(GAME_FIELD_TYPES.WALL);
@@ -539,6 +543,7 @@ function random_first_row(cols) {
             random_row.push(GAME_FIELD_TYPES.WAY);
         }
     }
+    // Die letzten drei felder müssen wege sein
     random_row = random_row.concat(new Array(3).fill(GAME_FIELD_TYPES.WAY, 0, 3));
     return random_row;
 }
@@ -610,7 +615,6 @@ export class Game {
             if (!pacman._eating_mode) {
                 this.end_game(false);
             } else {
-                // this._game_layout[ghost._x][ghost._y] = GAME_FIELD_TYPES.WAY;
                 ghost._x = -1;
                 ghost._y = -1;
                 ghost.set_spawn_timer();
@@ -635,7 +639,7 @@ export class Game {
         return new Game(game_cell_size, this._canvas, this._ctx,game_rows,game_cols);
     }
 
-
+    // Filtert alle Wege
     get_possible_spawn_points() {
         let possible_spawn_fields = [];
         this._game_layout.forEach((field_row, row) => {
@@ -646,7 +650,7 @@ export class Game {
         });
         return possible_spawn_fields;
     }
-
+    // Spawnt Geister, wenn sie gegessen wurden
     spawn_ghost() {
         let spawn_fields = this.get_possible_spawn_points();
         // Filtert Spawnpunkte vom Geist, sodass dieser nicht direkt vor Pacman spawnen kann
@@ -660,7 +664,7 @@ export class Game {
         }
     }
 
-
+    // Zeichnet das Spielfeld (Wege und Wände)
     draw_grid() {
         this._ctx.strokeStyle = "black";
 
@@ -691,6 +695,7 @@ export class Game {
         }
     }
 
+    // Zeichnet die items auf dem Spielfeld
     draw_overlay() {
         this._ctx.strokeStyle = "black";
 
@@ -759,7 +764,6 @@ export class Game {
     }
 
     get_tile_value(x, y) {
-        //if (x > this._game_layout.length || y > this._game_layout[0].length) {
         if (x < 1 || y < 1 || x >= this._game_layout.length || y >= this._game_layout[0].length) {
             return "X"
         }
@@ -791,6 +795,7 @@ export class Game {
         scoreDisplay.innerText = this._pacman._points;
     }
 
+    // Zusätzliche Erkennung zwischen Intervallen
     interval_checking() {
         this._pacman.decrement_eating_timer();
         this._ghosts.forEach((ghost) => {
